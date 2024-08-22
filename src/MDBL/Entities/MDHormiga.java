@@ -5,6 +5,7 @@ public abstract class MDHormiga implements IHormiga{
     private String tipo;
     private String sexo;
     private String estado;
+    private boolean entrenada = false;
 
     
 
@@ -48,6 +49,13 @@ public abstract class MDHormiga implements IHormiga{
     public void setEstado(String estado) {
         this.estado = estado;
     }   
+    public void setEntrenada(boolean entrenada) {
+        this.entrenada = entrenada;
+    }
+
+    public boolean isEntrenada() {
+        return entrenada;
+    }
 
     @Override
     public MDHormiga comer(MDIngestaNativa ingestaNativa) {

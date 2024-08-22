@@ -8,9 +8,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 
 import Infra.AppException;
 import MDBL.HormigueroBL;
+import MDBL.Entities.EntomologoImpl;
+import MDBL.Entities.IEntomologo;
 import MDBL.Entities.MDAlimento;
 import MDBL.Entities.MDCarnivoro;
 import MDBL.Entities.MDGenoAlimento;
@@ -66,8 +69,9 @@ public class MDFormEcuAnt extends JFrame {
         add(mdLogoLabel, gbc);
 
         // Sección de la tabla (JTable con 5 filas y 6 columnas)
-        String[] mdColumnNames = {"IdHormiga", "TipoHormiga", "Sexo","Alimentación", "Estado"};
-        Object[][] mdData = new Object[5][5]; 
+        String[] mdColumnNames = {"IdHormiga", "TipoHormiga", "Sexo", "Alimentación", "Estado", "Entrenada"};
+        Object[][] mdData = new Object[5][6]; 
+
 
         JTable mdTable = new JTable(mdData, mdColumnNames);
         JScrollPane mdTableScrollPane = new JScrollPane(mdTable);
@@ -122,6 +126,44 @@ public class MDFormEcuAnt extends JFrame {
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.NONE;
         add(mdButtonPanel, gbc);
+        JButton mdEntrenarButton = new JButton("Entrenar");
+        mdButtonPanel.add(mdEntrenarButton);
+
+        mdEntrenarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = mdTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    String tipoHormiga = (String) mdTable.getValueAt(selectedRow, 1);
+                    
+                    if ("Larva".equals(tipoHormiga)) {
+                        JOptionPane.showMessageDialog(null, "Las larvas no pueden ser entrenadas.");
+                    } else {
+                        MDHormiga hormiga = hormigueroBL.lstHormiguero.get(selectedRow);  // Asegúrate de que la lista y la tabla están sincronizadas
+                        try {
+                            IEntomologo entomologo = new EntomologoImpl();  // Implementación concreta de IEntomologo
+                            entomologo.educar(hormiga);
+                            
+                            // Actualizar el valor en la tabla
+                            mdTable.setValueAt("SI", selectedRow, 5);  // Actualiza la columna "Entrenada"
+                            
+                            // Notificar al modelo de la tabla que los datos han cambiado
+                            ((AbstractTableModel) mdTable.getModel()).fireTableCellUpdated(selectedRow, 5);
+                            
+                            JOptionPane.showMessageDialog(null, tipoHormiga + " entrenada y sumisa.");
+                        } catch (AppException ex) {
+                            JOptionPane.showMessageDialog(null, "Error al entrenar la hormiga: " + ex.getMessage());
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione una hormiga para entrenar.");
+                }
+            }
+        });
+        
+
+
+
 
         // Sección inferior con la cédula y nombres
         JPanel mdInfoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -165,6 +207,7 @@ public class MDFormEcuAnt extends JFrame {
                         mdTable.setValueAt(larva.getSexo(), mdCurrentRow, 2);  // Sexo
                         mdTable.setValueAt("", mdCurrentRow, 3);  // GenoAlimento vacío
                         mdTable.setValueAt(larva.getEstado(), mdCurrentRow, 4);  // Estado
+                        mdTable.setValueAt("NO", mdCurrentRow, 5);
                         mdCurrentRow++;
                     } else {
                         JOptionPane.showMessageDialog(null, "No se pueden agregar más larvas. La tabla está llena.");
@@ -189,11 +232,19 @@ public class MDFormEcuAnt extends JFrame {
                         String result = hormigueroBL.alimentarHormiga(idHormiga, geno, nativa);
                         JOptionPane.showMessageDialog(null, result);
         
-                        // Actualizar la tabla con el nuevo estado de la hormiga
+                        // Obtener la hormiga actualizada
                         MDHormiga hormiga = hormigueroBL.lstHormiguero.get(mdCurrentRow - 1);
+        
+                        // Verificar si la larva se ha convertido en rastreadora
+                        if ("Rastreadora".equals(hormiga.getTipo())) {
+                            hormiga.setSexo("Hembra");  // Cambiar el sexo a hembra
+                        }
+        
+                        // Actualizar la tabla con el nuevo estado de la hormiga
                         mdTable.setValueAt(hormiga.getTipo(), mdCurrentRow - 1, 1);
                         mdTable.setValueAt(hormiga.getEstado(), mdCurrentRow - 1, 4);
                         mdTable.setValueAt(geno + " - " + nativa, mdCurrentRow - 1, 3);  // Actualizar Alimentación
+                        mdTable.setValueAt(hormiga.getSexo(), mdCurrentRow - 1, 2);  // Actualizar Sexo
                     } catch (AppException ex) {
                         JOptionPane.showMessageDialog(null, "Error al alimentar hormiga: " + ex.getMessage());
                     }
@@ -202,7 +253,7 @@ public class MDFormEcuAnt extends JFrame {
                 }
             }
         });
-
+        
         //Eliminar
         mdEliminarButton.addActionListener(new ActionListener() {
             @Override
