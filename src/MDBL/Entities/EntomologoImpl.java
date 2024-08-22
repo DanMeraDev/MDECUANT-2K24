@@ -8,6 +8,6 @@ public class EntomologoImpl implements IEntomologo{
         if (hormiga.getTipo().equals("Larva")) {
             throw new AppException("Las larvas no pueden ser entrenadas.");
         }
-        hormiga.setEntrenada(true);  // Aquí deberías agregar un método `setEntrenada` en la clase `MDHormiga`
+        hormiga.setEntrenada(true);  
     }
 }

@@ -11,7 +11,7 @@ public class MDRastreadora extends MDHormiga {
     @Override
     public MDHormiga comer(MDIngestaNativa ingestaNativa) {
         if (ingestaNativa instanceof MDHerviboro && ingestaNativa.getGenoAlimentoInyectado().getTipo().equals("XX")) {
-            return this;  // Sin cambios, sigue viva
+            return this;
         }
 
         this.setEstado("MUERTA");

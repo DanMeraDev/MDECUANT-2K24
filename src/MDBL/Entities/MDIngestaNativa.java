@@ -5,7 +5,6 @@ public abstract class MDIngestaNativa extends MDAlimento implements IIngestaNati
 
     @Override
     public boolean inyectar(MDGenoAlimento genoAlimento) {
-        // Verificamos compatibilidad o aplicamos alguna lógica
         if (genoAlimento != null) {
             this.genoAlimentoInyectado = genoAlimento;
             return true;

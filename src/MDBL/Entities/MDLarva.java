@@ -12,7 +12,7 @@ public class MDLarva extends MDHormiga {
     public MDHormiga comer(MDIngestaNativa ingestaNativa) {
         if (ingestaNativa instanceof MDHerviboro && ingestaNativa.getGenoAlimentoInyectado().getTipo().equals("XX")) {
             MDRastreadora rastreadora = new MDRastreadora(this.getId());
-            rastreadora.setSexo("Hembra");  // Cambio a Hembra
+            rastreadora.setSexo("Hembra");
             return rastreadora;
         }
 
@@ -20,7 +20,7 @@ public class MDLarva extends MDHormiga {
             (ingestaNativa.getGenoAlimentoInyectado().getTipo().equals("X") ||
              ingestaNativa.getGenoAlimentoInyectado().getTipo().equals("XX") ||
              ingestaNativa.getGenoAlimentoInyectado().getTipo().equals("XY"))) {
-            return this;  // Sin cambios, la larva sigue viva
+            return this; 
         }
 
         this.setEstado("MUERTA");

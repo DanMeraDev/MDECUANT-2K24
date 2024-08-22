@@ -163,8 +163,6 @@ public class MDFormEcuAnt extends JFrame {
         
 
 
-
-
         // Sección inferior con la cédula y nombres
         JPanel mdInfoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         JLabel mdProgramLabel = new JLabel("Programación II");
@@ -207,7 +205,7 @@ public class MDFormEcuAnt extends JFrame {
                         mdTable.setValueAt(larva.getSexo(), mdCurrentRow, 2);  // Sexo
                         mdTable.setValueAt("", mdCurrentRow, 3);  // GenoAlimento vacío
                         mdTable.setValueAt(larva.getEstado(), mdCurrentRow, 4);  // Estado
-                        mdTable.setValueAt("NO", mdCurrentRow, 5);
+                        mdTable.setValueAt("NO", mdCurrentRow, 5); // Entrenada
                         mdCurrentRow++;
                     } else {
                         JOptionPane.showMessageDialog(null, "No se pueden agregar más larvas. La tabla está llena.");
@@ -237,7 +235,7 @@ public class MDFormEcuAnt extends JFrame {
         
                         // Verificar si la larva se ha convertido en rastreadora
                         if ("Rastreadora".equals(hormiga.getTipo())) {
-                            hormiga.setSexo("Hembra");  // Cambiar el sexo a hembra
+                            hormiga.setSexo("Hembra"); 
                         }
         
                         // Actualizar la tabla con el nuevo estado de la hormiga
@@ -264,7 +262,6 @@ public class MDFormEcuAnt extends JFrame {
                     // Obtener el tipo de hormiga de la fila seleccionada
                     String tipoHormiga = (String) mdTable.getValueAt(selectedRow, 1);
         
-                    // Mostrar el diálogo de confirmación
                     int respuesta = JOptionPane.showConfirmDialog(
                         null,
                         "¿Está seguro de eliminar la " + tipoHormiga + "?",
@@ -273,7 +270,6 @@ public class MDFormEcuAnt extends JFrame {
                         JOptionPane.QUESTION_MESSAGE
                     );
         
-                    // Si la respuesta es "Sí", cambiar el estado de la hormiga a "muerta"
                     if (respuesta == JOptionPane.YES_OPTION) {
                         MDHormiga hormiga = hormigueroBL.lstHormiguero.get(selectedRow);
                         hormiga.setEstado("MUERTA");
@@ -314,7 +310,6 @@ public class MDFormEcuAnt extends JFrame {
         HormigueroDAO hormigueroDAC = new HormigueroDAO();
         hormigueroDAC.saveHormigueroToCSV(fullDataHormiguero.toString());
 
-        // Mostrar mensaje de éxito
         JOptionPane.showMessageDialog(this, "Registros guardados exitosamente");
 
     } catch (AppException ex) {
@@ -323,10 +318,6 @@ public class MDFormEcuAnt extends JFrame {
         }
     });
 
-
-        
-
-        
 
         // Mostrar la ventana
         setVisible(true);

@@ -59,13 +59,10 @@ public abstract class MDHormiga implements IHormiga{
 
     @Override
     public MDHormiga comer(MDIngestaNativa ingestaNativa) {
-        // Supongamos que la larva solo sobrevive si es alimentada con un tipo específico de GenoAlimento
         if (ingestaNativa.getGenoAlimentoInyectado() != null && ingestaNativa.getGenoAlimentoInyectado().getTipo().equals("X")) {
-            // La larva sobrevive y se convierte en otro tipo de hormiga
             this.setEstado("VIVA");
             this.setTipo("Hormiga Obrera");
         } else {
-            // La larva muere si el GenoAlimento no es compatible
             this.setEstado("MUERTA");
         }
         return this;
