@@ -1,0 +1,19 @@
+package MDBL.Entities;
+
+public class MDRastreadora extends MDHormiga {
+
+    public MDRastreadora(int id) {
+        super(id, "Rastreadora");
+        this.setEstado("VIVA");
+    }
+
+    @Override
+    public MDHormiga comer(MDIngestaNativa ingestaNativa) {
+        if (ingestaNativa instanceof MDHerviboro && ingestaNativa.getGenoAlimentoInyectado().getTipo().equals("XX")) {
+            return this;  // Sin cambios, sigue viva
+        }
+
+        this.setEstado("MUERTA");
+        return this;
+    }
+}

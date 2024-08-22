@@ -9,18 +9,22 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 
-import MDBL.MDAlimento;
-import MDBL.MDCarnivoro;
-import MDBL.MDGenoAlimento;
-import MDBL.MDHerviboro;
-import MDBL.MDIngestaNativa;
-import MDBL.MDInsectivoro;
-import MDBL.MDLarva;
-import MDBL.MDNectarivoros;
-import MDBL.MDOmnivoro;
-import MDBL.X;
-import MDBL.XX;
-import MDBL.XY;
+import Infra.AppException;
+import MDBL.HormigueroBL;
+import MDBL.Entities.MDAlimento;
+import MDBL.Entities.MDCarnivoro;
+import MDBL.Entities.MDGenoAlimento;
+import MDBL.Entities.MDHerviboro;
+import MDBL.Entities.MDHormiga;
+import MDBL.Entities.MDIngestaNativa;
+import MDBL.Entities.MDInsectivoro;
+import MDBL.Entities.MDLarva;
+import MDBL.Entities.MDNectarivoros;
+import MDBL.Entities.MDOmnivoro;
+import MDBL.Entities.X;
+import MDBL.Entities.XX;
+import MDBL.Entities.XY;
+import MDDAC.HormigueroDAO;
 
 import java.awt.*;
 
@@ -30,12 +34,13 @@ public class MDFormEcuAnt extends JFrame {
     static String mdCedula = "1850629039";
     static String mdNombres = "Mera Guerra Daniel Alejandro";
     private int mdCurrentRow = 0;
+     private HormigueroBL hormigueroBL = new HormigueroBL();
 
     public MDFormEcuAnt() {
         mdCustomerControls();
     }
 
-    public void mdCustomerControls() {
+    private void mdCustomerControls() {
         // Configuración de la ventana principal
         setTitle("EcuAnt 2K24A");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,8 +66,8 @@ public class MDFormEcuAnt extends JFrame {
         add(mdLogoLabel, gbc);
 
         // Sección de la tabla (JTable con 5 filas y 6 columnas)
-        String[] mdColumnNames = {"RegNro", "TipoHormiga", "Sexo", "GenoAlimento","IngestaNativa", "Estado"};
-        Object[][] mdData = new Object[5][6]; 
+        String[] mdColumnNames = {"IdHormiga", "TipoHormiga", "Sexo","Alimentación", "Estado"};
+        Object[][] mdData = new Object[5][5]; 
 
         JTable mdTable = new JTable(mdData, mdColumnNames);
         JScrollPane mdTableScrollPane = new JScrollPane(mdTable);
@@ -86,7 +91,7 @@ public class MDFormEcuAnt extends JFrame {
         mdIngestaNativaOptions.add(new MDCarnivoro());
         mdIngestaNativaOptions.add(new MDHerviboro());
         mdIngestaNativaOptions.add(new MDOmnivoro());
-        // mdIngestaNativaOptions.add(new MDInsectivoro());
+        mdIngestaNativaOptions.add(new MDInsectivoro());
         mdIngestaNativaOptions.add(new MDNectarivoros());
         JComboBox<MDGenoAlimento> mdGenoAlimentoDropdown = new JComboBox<>(mdGenoAlimentoOptions.toArray(new MDGenoAlimento[0]));
         JComboBox<MDIngestaNativa> mdIngestaNativaDropdown = new JComboBox<>(mdIngestaNativaOptions.toArray(new MDIngestaNativa[0]));
@@ -135,38 +140,63 @@ public class MDFormEcuAnt extends JFrame {
 
          // Acción para llenar la tabla al hacer clic en "Crear Larva"
          mdCrearLarvaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int response = JOptionPane.showConfirmDialog(
-                    null, 
-                    "¿Desea guardar una larva?", 
-                    "Confirmar", 
-                    JOptionPane.YES_NO_OPTION, 
-                    JOptionPane.QUESTION_MESSAGE
-                );
-                if (response == JOptionPane.YES_OPTION) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int response = JOptionPane.showConfirmDialog(
+                null, 
+                "¿Desea guardar una larva?", 
+                "Confirmar", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.QUESTION_MESSAGE
+            );
+            if (response == JOptionPane.YES_OPTION) {
+                try {
+                    // Crear la larva usando HormigueroBL
+                    String result = hormigueroBL.crearLarva();
+                    JOptionPane.showMessageDialog(null, result);
+
+                    // Obtener la última larva agregada a la lista
+                    MDHormiga larva = hormigueroBL.lstHormiguero.get(hormigueroBL.lstHormiguero.size() - 1);
+
+                    // Mostrar la larva en la tabla
                     if (mdCurrentRow < mdData.length) {
-                        mdTable.setValueAt(mdCurrentRow + 1, mdCurrentRow, 0);  // RegNro
-                        mdTable.setValueAt(new MDLarva(), mdCurrentRow, 1);  // TipoLarva
-                        mdTable.setValueAt("ASEXUAL", mdCurrentRow, 2);  // Sexo
+                        mdTable.setValueAt(larva.getId(), mdCurrentRow, 0);  // idHormiga
+                        mdTable.setValueAt(larva.getTipo(), mdCurrentRow, 1);  // TipoLarva
+                        mdTable.setValueAt(larva.getSexo(), mdCurrentRow, 2);  // Sexo
                         mdTable.setValueAt("", mdCurrentRow, 3);  // GenoAlimento vacío
-                        mdTable.setValueAt("", mdCurrentRow, 4);  // IngestaNativa vacío
-                        mdTable.setValueAt("Activo", mdCurrentRow, 5);  // Estado
+                        mdTable.setValueAt(larva.getEstado(), mdCurrentRow, 4);  // Estado
                         mdCurrentRow++;
                     } else {
                         JOptionPane.showMessageDialog(null, "No se pueden agregar más larvas. La tabla está llena.");
                     }
+                } catch (AppException ex) {
+                    JOptionPane.showMessageDialog(null, "Error al crear larva: " + ex.getMessage());
                 }
             }
-        });
+        }
+    });
 
         // Alimentar
         mdAlimentarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (mdCurrentRow > 0) {
-                    mdTable.setValueAt(mdGenoAlimentoDropdown.getSelectedItem(), mdCurrentRow - 1, 3);  // GenoAlimento
-                    mdTable.setValueAt(mdIngestaNativaDropdown.getSelectedItem(), mdCurrentRow - 1, 4);  // IngestaNativa
+                    int idHormiga = (int) mdTable.getValueAt(mdCurrentRow - 1, 0);
+                    String geno = mdGenoAlimentoDropdown.getSelectedItem().toString();
+                    String nativa = mdIngestaNativaDropdown.getSelectedItem().toString();
+        
+                    try {
+                        String result = hormigueroBL.alimentarHormiga(idHormiga, geno, nativa);
+                        JOptionPane.showMessageDialog(null, result);
+        
+                        // Actualizar la tabla con el nuevo estado de la hormiga
+                        MDHormiga hormiga = hormigueroBL.lstHormiguero.get(mdCurrentRow - 1);
+                        mdTable.setValueAt(hormiga.getTipo(), mdCurrentRow - 1, 1);
+                        mdTable.setValueAt(hormiga.getEstado(), mdCurrentRow - 1, 4);
+                        mdTable.setValueAt(geno + " - " + nativa, mdCurrentRow - 1, 3);  // Actualizar Alimentación
+                    } catch (AppException ex) {
+                        JOptionPane.showMessageDialog(null, "Error al alimentar hormiga: " + ex.getMessage());
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "No hay larvas creadas para alimentar.");
                 }
@@ -177,54 +207,71 @@ public class MDFormEcuAnt extends JFrame {
         mdEliminarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Limpiar todos los registros de la tabla
-                for (int i = 0; i < mdData.length; i++) {
-                    for (int j = 0; j < mdData[i].length; j++) {
-                        mdTable.setValueAt(null, i, j);
+                // Verifica si hay alguna fila seleccionada
+                int selectedRow = mdTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    // Obtener el tipo de hormiga de la fila seleccionada
+                    String tipoHormiga = (String) mdTable.getValueAt(selectedRow, 1);
+        
+                    // Mostrar el diálogo de confirmación
+                    int respuesta = JOptionPane.showConfirmDialog(
+                        null,
+                        "¿Está seguro de eliminar la " + tipoHormiga + "?",
+                        "Confirmar eliminación",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                    );
+        
+                    // Si la respuesta es "Sí", cambiar el estado de la hormiga a "muerta"
+                    if (respuesta == JOptionPane.YES_OPTION) {
+                        MDHormiga hormiga = hormigueroBL.lstHormiguero.get(selectedRow);
+                        hormiga.setEstado("MUERTA");
+        
+                        // Actualizar la tabla para reflejar el nuevo estado
+                        mdTable.setValueAt(hormiga.getEstado(), selectedRow, 4);
+        
+                        JOptionPane.showMessageDialog(null, "La hormiga ha sido eliminada (cambiada a estado muerta).");
                     }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione una hormiga para eliminar.");
                 }
-                // Reiniciar el contador de filas
-                mdCurrentRow = 0;
             }
         });
 
-        //Guardar
-        mdGuardarButton.addActionListener(e -> {
+    // Guardar
+    mdGuardarButton.addActionListener(e -> {
     int rowCount = mdTable.getRowCount();
     int colCount = mdTable.getColumnCount();
-    String csvFilePath = new File("Data/MDHormiguero.csv").getAbsolutePath();
-
-    try (FileWriter csvWriter = new FileWriter(csvFilePath)) {
-        // Escribir la cabecera
-        csvWriter.append("RegNro;TipoLarva;Sexo;GenoAlimento;IngestaNativa;Estado;\n");
-
-        // Escribir los datos de las filas
-        for (int i = 0; i < rowCount; i++) {
-            for (int j = 0; j < colCount; j++) {
-                Object cellValue = mdTable.getValueAt(i, j);
-                csvWriter.append(cellValue != null ? cellValue.toString() : "");
-                if (j < colCount - 1) {
-                    csvWriter.append(";");
-                }
+    StringBuilder fullDataHormiguero = new StringBuilder();
+    
+    // Escribir la cabecera
+    fullDataHormiguero.append("IdHormiga;TipoHormiga;Sexo;Alimentación;Estado;\n");
+    
+    // Escribir los datos de las filas
+    for (int i = 0; i < rowCount; i++) {
+        for (int j = 0; j < colCount; j++) {
+            Object cellValue = mdTable.getValueAt(i, j);
+            fullDataHormiguero.append(cellValue != null ? cellValue.toString() : "");
+            if (j < colCount - 1) {
+                fullDataHormiguero.append(";");
             }
-            csvWriter.append("\n");
         }
+        fullDataHormiguero.append("\n");
+    }
+
+    try {
+        HormigueroDAO hormigueroDAC = new HormigueroDAO();
+        hormigueroDAC.saveHormigueroToCSV(fullDataHormiguero.toString());
 
         // Mostrar mensaje de éxito
         JOptionPane.showMessageDialog(this, "Registros guardados exitosamente");
-        
-        // Borrar los datos de la tabla después de guardar
-        for (int i = 0; i < rowCount; i++) {
-            for (int j = 0; j < colCount; j++) {
-                mdTable.setValueAt("", i, j);
-            }
-        }
 
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar los registros.");
-            ex.printStackTrace();
+    } catch (AppException ex) {
+        JOptionPane.showMessageDialog(this, "Error al guardar los registros.");
+        ex.printStackTrace();
         }
     });
+
 
         
 
